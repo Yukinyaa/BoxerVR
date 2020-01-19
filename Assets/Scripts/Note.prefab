@@ -123,6 +123,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   beat: 0
   pos: {x: 0, y: 0}
+  hookSide: 2
   mp: {fileID: 0}
-  handSide: 0
+  reqStrength: 0
+  handSide: 2
   speed: 0
