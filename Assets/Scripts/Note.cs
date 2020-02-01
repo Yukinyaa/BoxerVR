@@ -3,13 +3,13 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public enum HandSide {left,right,any}
-public enum HookSide{left,right,up,down,none}
+public enum HandSide {left,right,any,both}
+
 public class Note : MonoBehaviour
 {
     public float beat;
     public Vector2 pos;
-    public HookSide hookSide;
+    public float? hookSide;
     public MusicPlayer mp;
     public float reqStrength;
     public HandSide handSide;
@@ -17,29 +17,66 @@ public class Note : MonoBehaviour
     public float speed;
 
     public List<List<GameObject>> OnDestoroyObjects;
-    public void Init(float beat, Vector2 pos, MusicPlayer parent, float speed, HandSide hs = HandSide.any, HookSide hss = HookSide.none)
+
+    static Texture red;
+    static Texture blu;
+    static Texture grey;
+    static Texture white;
+
+    static Texture ColoredTexture(Texture og)
+    {
+        Texture2D targetTexture = new Texture2D(og.width, og.height);
+
+        for (int y = 0; y < og.height; y++)
+        {
+            for (int x = 0; x < og.width; x++)
+            {
+
+                targetTexture.SetPixel(x, y, Color.green);
+
+            }
+        }
+
+        targetTexture.Apply();
+        return targetTexture;
+    }
+    static void initTexture(Texture og)
+    {
+    }
+
+    public void Init(float beat, Vector2 pos, MusicPlayer parent, float speed, HandSide hs = HandSide.any, float? hss = null)
     {
         this.beat = beat;
         this.pos = pos;
         this.mp = parent;
         this.speed = speed;
         handSide = hs;
-        hookSide = hss;
-        switch(hookSide)
+        switch (hs)
         {
-            case HookSide.none: sideIndicator.gameObject.SetActive(false); break;
-            case HookSide.up: sideIndicator.Rotate(0,0,0); break;
-            case HookSide.right: sideIndicator.Rotate(0,0,90); break;
-            case HookSide.down: sideIndicator.Rotate(0,0,180); break;
-            case HookSide.left: sideIndicator.Rotate(0,0,270); break;
-
-
+            case HandSide.any:
+                gameObject.GetComponent<MeshRenderer>().material.color = Color.white;
+                break;
+            case HandSide.both:
+                gameObject.GetComponent<MeshRenderer>().material.color = Color.gray;
+                break;
+            case HandSide.left:
+                gameObject.GetComponent<MeshRenderer>().material.color = Color.red;
+                break;
+            case HandSide.right:
+                gameObject.GetComponent<MeshRenderer>().material.color = Color.blue;
+                break;
         }
+        hookSide = hss;
+        if(hookSide == null)
+            sideIndicator.gameObject.SetActive(false);
+        else
+            sideIndicator.Rotate(0,0,hss??0); 
     }
 
     void Update()
     {
         float delta = mp.CurrentBeat - beat;
+        if(delta > 1) DestroyMe();
         transform.position = new Vector3(pos.x, pos.y, -delta * speed);
     }
     const float sideAccuracy = 0.5f;
@@ -49,25 +86,16 @@ public class Note : MonoBehaviour
         var handVelocity = collision.gameObject.GetComponent<SpeedMeter>().velocity;
         var hvNorm = handVelocity.normalized;
         Debug.Log(hvNorm.x);
-        switch(hookSide)
+        
+        if(hookSide != null)
         {
-            case HookSide.up:
-                if(hvNorm.y<sideAccuracy) return;
-                break;
-            case HookSide.down:
-                if(hvNorm.y>-sideAccuracy) return;
-                break;
-            case HookSide.right:
-                if(hvNorm.x>-sideAccuracy) return;
-                break;
-            case HookSide.left:
-                if(hvNorm.x<sideAccuracy) return;
-                break;
-            case HookSide.none:
-                break;
+            var aa = new Vector2(handVelocity.x, handVelocity.y).normalized;
+            var bb = new Vector2(0,1).Rotate(hookSide??0);
+            if(Vector2.Dot(aa, bb) < 0)
+                return;
         }
         if(handVelocity.magnitude <= reqStrength)
-            return  ;
+            return;
 
         if(handSide == HandSide.any) DestroyMe();
         switch(collision.rigidbody.name)
