@@ -15,8 +15,8 @@ public class SpeedMeter : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        velocity *= 0.2f;
-        velocity += ((transform.position - lastPos)/Time.deltaTime) * 0.8f;
+        velocity *= 0.95f;
+        velocity += ((transform.position - lastPos)/Time.deltaTime) * 0.05f;
         lastPos = transform.position;
     }
 }

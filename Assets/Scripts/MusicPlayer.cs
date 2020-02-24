@@ -48,10 +48,12 @@ public class MusicPlayer : MonoBehaviour
         
         if (metronomePlayed < CurrentBeat)
         {
-            if(metronomePlayed % 4 == 0)
-                @as.PlayOneShot(tick, 10);
+            if (metronomePlayed % 4 == 0)
+                if(tick != null)
+                    @as.PlayOneShot(tick, 10);
             else
-                @as.PlayOneShot(tock, 6);
+                if (tock != null)
+                    @as.PlayOneShot(tock, 6);
             metronomePlayed++;
         }
         

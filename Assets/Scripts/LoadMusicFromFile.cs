@@ -8,9 +8,13 @@ public class LoadMusicFromFile : MonoBehaviour
 {
     IEnumerator Start()
     {
-
+#if UNITY_EDITOR
+        var reqest = UnityWebRequest.Get("file://" + Application.dataPath + "/music.mp3");
+        Debug.Log("Directory is : " + "file://" + Application.dataPath + "/music.mp3");
+#else
         var reqest = UnityWebRequest.Get("file://" + Application.dataPath + "/../music.mp3");
         Debug.Log("Directory is : "+ "file://" + Application.dataPath + "/../music.mp3");
+#endif
 
         yield return reqest.SendWebRequest();
         while (reqest.downloadProgress < 1.0)

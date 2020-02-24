@@ -16,34 +16,10 @@ public class Note : MonoBehaviour
     public Transform sideIndicator;
     public float speed;
 
+    public AudioClip TickSound;
+
     public List<List<GameObject>> OnDestoroyObjects;
-
-    static Texture red;
-    static Texture blu;
-    static Texture grey;
-    static Texture white;
-
-    static Texture ColoredTexture(Texture og)
-    {
-        Texture2D targetTexture = new Texture2D(og.width, og.height);
-
-        for (int y = 0; y < og.height; y++)
-        {
-            for (int x = 0; x < og.width; x++)
-            {
-
-                targetTexture.SetPixel(x, y, Color.green);
-
-            }
-        }
-
-        targetTexture.Apply();
-        return targetTexture;
-    }
-    static void initTexture(Texture og)
-    {
-    }
-
+    
     public void Init(float beat, Vector2 pos, MusicPlayer parent, float speed, HandSide hs = HandSide.any, float? hss = null)
     {
         this.beat = beat;
@@ -51,32 +27,46 @@ public class Note : MonoBehaviour
         this.mp = parent;
         this.speed = speed;
         handSide = hs;
-        switch (hs)
+        Color c;
+        switch (handSide)
         {
             case HandSide.any:
-                gameObject.GetComponent<MeshRenderer>().material.color = Color.white;
+                c = Color.white;
                 break;
             case HandSide.both:
-                gameObject.GetComponent<MeshRenderer>().material.color = Color.gray;
+                c = new Color(.5f, 0, .5f);//purple
                 break;
             case HandSide.left:
-                gameObject.GetComponent<MeshRenderer>().material.color = Color.red;
+                c = Color.red;
                 break;
             case HandSide.right:
-                gameObject.GetComponent<MeshRenderer>().material.color = Color.blue;
+                c = Color.blue;
                 break;
+            default: throw new Exception();
         }
+#if UNITY_2018
+        gameObject.GetComponent<Renderer>().material.color = c;
+#elif UNITY_2019
+        // You can re-use this block between calls rather than constructing a new one each time.
+        var block = new MaterialPropertyBlock();
+
+        // You can look up the property by ID instead of the string to be more efficient.
+        block.SetColor("_BaseColor", c);
+
+        // You can cache a reference to the renderer to avoid searching for it.
+        GetComponent<Renderer>().SetPropertyBlock(block);
+#endif
         hookSide = hss;
-        if(hookSide == null)
+        if (hookSide == null)
             sideIndicator.gameObject.SetActive(false);
         else
-            sideIndicator.Rotate(0,0,hss??0); 
+            sideIndicator.Rotate(0, 0, hss ?? 0);
     }
 
     void Update()
     {
         float delta = mp.CurrentBeat - beat;
-        if(delta > 1) DestroyMe();
+        if (delta > 1) Destroy(this);
         transform.position = new Vector3(pos.x, pos.y, -delta * speed);
     }
     const float sideAccuracy = 0.5f;
@@ -90,7 +80,7 @@ public class Note : MonoBehaviour
         if(hookSide != null)
         {
             var aa = new Vector2(handVelocity.x, handVelocity.y).normalized;
-            var bb = new Vector2(0,1).Rotate(hookSide??0);
+            var bb = new Vector2(0, 1).Rotate(hookSide ?? 0);
             if(Vector2.Dot(aa, bb) < 0)
                 return;
         }
@@ -101,13 +91,13 @@ public class Note : MonoBehaviour
         switch(collision.rigidbody.name)
         {
             case "LHS":
-                if(handSide == HandSide.left)
+                if(handSide == HandSide.left || handSide == HandSide.both)
                 {
                     DestroyMe();
                 }
                 break;
             case "RHS":
-                if(handSide == HandSide.right)
+                if(handSide == HandSide.right || handSide == HandSide.both)
                 {
                     DestroyMe();
                 }
@@ -118,6 +108,7 @@ public class Note : MonoBehaviour
    }
     void DestroyMe()
     {
+        BeatManager.Instance.GetComponent<AudioSource>().PlayOneShot(TickSound, 5);
         //foreach(var obj in OnDestoroyObjects)
         {
             //Instantiate(obj[UnityEngine.Random.Range(0,obj.Count)],transform.position,Quaternion.identity);
