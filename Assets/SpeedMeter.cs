@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class SpeedMeter : MonoBehaviour
 {
-    public Vector3 lastPos;
+    Vector3 lastPos;
     public Vector3 velocity = Vector3.zero;
     // Start is called before the first frame update
     void Start()

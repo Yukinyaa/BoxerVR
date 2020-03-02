@@ -2,7 +2,11 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class DuckNote : MonoBehaviour
+public interface IColRouteObject
+{
+    void OnRoutedCollisionEvent(Collision col);
+}
+public class DuckNote : MonoBehaviour, IColRouteObject
 {
     public float beat;
     public Vector2 pos;
@@ -53,12 +57,6 @@ public class DuckNote : MonoBehaviour
         }
         transform.position = new Vector3(pos.x, pos.y, -delta * speed);
     }
-    void OnCollisionEnter(Collision collision)
-    {
-        if (collision.gameObject.name != "HeadCollider") return;
-
-        DestroyMe(false);
-    }
     void DestroyMe(bool success)
     {
         BeatManager.Instance.GetComponent<AudioSource>().PlayOneShot(success ? SuccessSound : FailedSound, 5);
@@ -67,5 +65,12 @@ public class DuckNote : MonoBehaviour
             //Instantiate(obj[UnityEngine.Random.Range(0,obj.Count)],transform.position,Quaternion.identity);
         }
         Destroy(this.gameObject);
+    }
+
+    public void OnRoutedCollisionEvent(Collision col)
+    {
+        if (col.gameObject.name != "HeadCollider") return;
+
+        DestroyMe(false);
     }
 }

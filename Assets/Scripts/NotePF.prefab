@@ -155,7 +155,7 @@ GameObject:
   - component: {fileID: 9179336785172014053}
   - component: {fileID: 5138851606039304107}
   m_Layer: 0
-  m_Name: Note
+  m_Name: NotePF
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -249,7 +249,7 @@ Rigidbody:
   m_UseGravity: 1
   m_IsKinematic: 0
   m_Interpolate: 0
-  m_Constraints: 112
+  m_Constraints: 126
   m_CollisionDetection: 1
 --- !u!114 &5138851606039304107
 MonoBehaviour:
@@ -270,4 +270,6 @@ MonoBehaviour:
   handSide: 2
   sideIndicator: {fileID: 4210101128918647597}
   speed: 0
-  TickSound: {fileID: 8300000, guid: 5302b356d99ed5c42ad5a4c907297a78, type: 3}
+  TickSound: {fileID: 8300000, guid: f1534b0f9f0bf3e49a250a0f0b4aa38e, type: 3}
+  OnDestoroyObjects:
+  - {fileID: 100004, guid: b46890100828db6429ff69c322b45893, type: 3}

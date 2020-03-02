@@ -18,7 +18,7 @@ public class Note : MonoBehaviour
 
     public AudioClip TickSound;
 
-    public List<List<GameObject>> OnDestoroyObjects;
+    public List<GameObject> OnDestoroyObjects;
     
     public void Init(float beat, Vector2 pos, MusicPlayer parent, float speed, HandSide hs = HandSide.any, float? hss = null)
     {
@@ -87,7 +87,9 @@ public class Note : MonoBehaviour
         if(handVelocity.magnitude <= reqStrength)
             return;
 
-        if(handSide == HandSide.any) DestroyMe();
+
+        Debug.Log("LEL_2: " + this.transform.position);
+        if (handSide == HandSide.any) DestroyMe();
         switch(collision.rigidbody.name)
         {
             case "LHS":
@@ -109,9 +111,10 @@ public class Note : MonoBehaviour
     void DestroyMe()
     {
         BeatManager.Instance.GetComponent<AudioSource>().PlayOneShot(TickSound, 5);
-        //foreach(var obj in OnDestoroyObjects)
+        if (OnDestoroyObjects != null)
         {
-            //Instantiate(obj[UnityEngine.Random.Range(0,obj.Count)],transform.position,Quaternion.identity);
+            foreach (var obj in OnDestoroyObjects)
+                Instantiate(obj, this.transform.position, Quaternion.identity);
         }
         Destroy(this.gameObject);
     }
