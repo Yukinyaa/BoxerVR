@@ -1,11 +1,12 @@
-using System;
-using System.Collections;
+﻿using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
 using UnityEngine;
 
-public enum HandSide {left,right,any,both}
-
-public class Note : MonoBehaviour
+public class FootNote : MonoBehaviour
 {
     public float beat;
     public Vector2 pos;
@@ -19,7 +20,7 @@ public class Note : MonoBehaviour
     public AudioClip TickSound;
 
     public List<GameObject> OnDestoroyObjects;
-    
+
     public void Init(float beat, Vector2 pos, MusicPlayer parent, float speed, HandSide hs = HandSide.any, float? hss = null)
     {
         this.beat = beat;
@@ -70,43 +71,45 @@ public class Note : MonoBehaviour
         transform.position = new Vector3(pos.x, pos.y, -delta * speed);
     }
     const float sideAccuracy = 0.5f;
-   void OnCollisionEnter(Collision collision) {
-        if(LayerMask.NameToLayer("Hands")!=collision.gameObject.layer) return;
-        
+    void OnCollisionEnter(Collision collision)
+    {
+        if (LayerMask.NameToLayer("Foot") != collision.gameObject.layer) return;
+
         var handVelocity = collision.gameObject.GetComponent<SpeedMeter>().velocity;
         var hvNorm = handVelocity.normalized;
-        Debug.Log(hvNorm.x);
-        
-        if(hookSide != null)
+
+
+        if (hookSide != null)
         {
             var aa = new Vector2(handVelocity.x, handVelocity.y).normalized;
             var bb = new Vector2(0, 1).Rotate(hookSide ?? 0);
-            if(Vector2.Dot(aa, bb) < 0)
+            if (Vector2.Dot(aa, bb) < 0)
                 return;
         }
-        if(handVelocity.magnitude <= reqStrength)
-            return;
+        if (handVelocity.y > 0.1f) return;
+        if (handVelocity.magnitude <= reqStrength) return;
 
-
+        DestroyMe();return;
+        Debug.Log("LEL_2: " + this.transform.position);
         if (handSide == HandSide.any) DestroyMe();
-        switch(collision.rigidbody.name)
+        switch (collision.rigidbody.name)
         {
             case "LHS":
-                if(handSide == HandSide.left || handSide == HandSide.both)
+                if (handSide == HandSide.left || handSide == HandSide.both)
                 {
                     DestroyMe();
                 }
                 break;
             case "RHS":
-                if(handSide == HandSide.right || handSide == HandSide.both)
+                if (handSide == HandSide.right || handSide == HandSide.both)
                 {
                     DestroyMe();
                 }
                 break;
-            default: 
+            default:
                 throw new ArgumentException();
         }
-   }
+    }
     void DestroyMe()
     {
         BeatManager.Instance.GetComponent<AudioSource>().PlayOneShot(TickSound, 5);
