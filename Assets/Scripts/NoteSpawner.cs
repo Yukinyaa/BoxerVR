@@ -6,7 +6,7 @@ using System.IO;
 
 public class NoteSpawner : MonoBehaviour
 {
-    public GameObject note, duckNote;
+    public GameObject note, duckNote, footNote;
     MusicPlayer musicPlayer;
 
     public Transform zero, two;
@@ -27,8 +27,9 @@ public class NoteSpawner : MonoBehaviour
         {
             csv.Add(line.Split(','));
         }
-        //vsersion
-        if (csv[0][3] == "2")
+        //version selections
+        if (true) { AutoConstruct = true; }
+        else if (csv[0][3] == "2")
         {
             AutoConstruct = false;
             parseV2(csv);
@@ -143,7 +144,7 @@ public class NoteSpawner : MonoBehaviour
                 {
                     var timing = float.Parse(line[0]);
                     var len = float.Parse(line[5]);
-                    var n = Instantiate(duckNote, Vector3.zero, Quaternion.identity).GetComponent<DuckNote>();
+                    var n = Instantiate(footNote, Vector3.zero, Quaternion.identity).GetComponent<DuckNote>();
                     n.Init(timing, len, musicPlayer, 140 / musicPlayer.BPM);
                 }
                 else
@@ -191,30 +192,61 @@ public class NoteSpawner : MonoBehaviour
         if(AutoConstruct)
             while (lastNoteSpawned-5 < musicPlayer.CurrentBeat)
             {
-                var n = Instantiate(note, Vector3.zero, Quaternion.identity).GetComponent<Note>();
-                Vector2 rnd = Random.insideUnitCircle * .6f + new Vector2(0, 1f);
-                HandSide handSide = HandSide.any;
-                float? hookSide = null;
-                if(Random.Range(0,20)<1)
-                    handSide = HandSide.left;
-                else if(Random.Range(0,19)<1)
-                    handSide = HandSide.right;
-                else
-                {
-                    switch (Random.Range(0,20))
-                    {
-                        case 0:  hookSide = 0;    break;
-                        case 1:  hookSide = 90;  break;
-                        case 2:  hookSide = 270;  break;
-                        case 3:  hookSide = 180; break;
-                        default: hookSide = null;  break;
-                    }
-                }
-
-                n.Init(lastNoteSpawned, rnd,musicPlayer, 1, handSide , hookSide);
+                if (Random.Range(0, 100) > 50) SpawnRandomFootNote();
+                if (Random.Range(0, 100) > 70) SpawnRandomNote();
                 lastNoteSpawned++;
             }
         
 
+    }
+    void SpawnRandomFootNote()
+    {
+        var n = Instantiate(footNote, Vector3.zero, Quaternion.identity).GetComponent<FootNote>();
+        Vector2 rnd = new Vector2(Random.Range(-.7f, .7f), 0);
+        HandSide handSide = HandSide.any;
+        float? hookSide = null;
+        if (Random.Range(0, 20) < 1)
+            handSide = HandSide.left;
+        else if (Random.Range(0, 19) < 1)
+            handSide = HandSide.right;
+        else
+        {
+            switch (Random.Range(0, 20))
+            {
+                case 0: hookSide = 0; break;
+                case 1: hookSide = 90; break;
+                case 2: hookSide = 270; break;
+                case 3: hookSide = 180; break;
+                default: hookSide = null; break;
+            }
+        }
+
+        n.Init(lastNoteSpawned, rnd, musicPlayer, 1, handSide, hookSide);
+    }
+
+    void SpawnRandomNote()
+    {
+        var n = Instantiate(note, Vector3.zero, Quaternion.identity).GetComponent<Note>();
+
+        Vector2 rnd = Random.insideUnitCircle * .6f + new Vector2(0, 1f);
+        HandSide handSide = HandSide.any;
+        float? hookSide = null;
+        if (Random.Range(0, 20) < 1)
+            handSide = HandSide.left;
+        else if (Random.Range(0, 19) < 1)
+            handSide = HandSide.right;
+        else
+        {
+            switch (Random.Range(0, 20))
+            {
+                case 0: hookSide = 0; break;
+                case 1: hookSide = 90; break;
+                case 2: hookSide = 270; break;
+                case 3: hookSide = 180; break;
+                default: hookSide = null; break;
+            }
+        }
+
+        n.Init(lastNoteSpawned, rnd, musicPlayer, 1, handSide, hookSide);
     }
 }

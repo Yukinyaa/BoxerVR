@@ -17,9 +17,9 @@ public class MusicPlayer : MonoBehaviour
 
     public float CurrentBeat { get { return (float)BPM / 60 * (@as.time - offset/1000f); } }
     
-    public int currntBPM = 120;
+    public float currntBPM = 326.975476839237f;
     public int offset = 188;
-    public int BPM
+    public float BPM
     {
         set { currntBPM = value; }
         get { return currntBPM; }

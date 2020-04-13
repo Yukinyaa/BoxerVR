@@ -54,7 +54,7 @@ public class TrackerFinder : MonoBehaviour
             this.transform.localScale = new Vector3(1, 1, 1);
             obj.Remove(foundObject);
             GetComponent<MeshRenderer>().enabled = false;
-            Destroy(foundObject.transform.Find("indicator"));
+            Destroy(foundObject.transform.Find("indicator").gameObject);
             transform.SetParent(foundObject.transform);
             this.transform.localPosition = Vector3.zero;
             return true;

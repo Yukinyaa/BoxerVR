@@ -14,13 +14,13 @@ public class FootNote : MonoBehaviour
     public MusicPlayer mp;
     public float reqStrength;
     public HandSide handSide;
-    public Transform sideIndicator;
     public float speed;
 
     public AudioClip TickSound;
 
     public List<GameObject> OnDestoroyObjects;
 
+    bool inited = false; 
     public void Init(float beat, Vector2 pos, MusicPlayer parent, float speed, HandSide hs = HandSide.any, float? hss = null)
     {
         this.beat = beat;
@@ -58,14 +58,17 @@ public class FootNote : MonoBehaviour
         GetComponent<Renderer>().SetPropertyBlock(block);
 #endif
         hookSide = hss;
-        if (hookSide == null)
-            sideIndicator.gameObject.SetActive(false);
-        else
-            sideIndicator.Rotate(0, 0, hss ?? 0);
+        inited = true;
+        Update();
     }
 
     void Update()
     {
+        if (inited == false)
+        {
+            transform.position = new Vector3(9999, 9999, 99999);
+            return;
+        } 
         float delta = mp.CurrentBeat - beat;
         if (delta > 1) Destroy(this.gameObject);
         transform.position = new Vector3(pos.x, pos.y, -delta * speed);
@@ -89,7 +92,8 @@ public class FootNote : MonoBehaviour
         if (handVelocity.y > 0.1f) return;
         if (handVelocity.magnitude <= reqStrength) return;
 
-        DestroyMe();return;
+        DestroyMe();
+        return;
         Debug.Log("LEL_2: " + this.transform.position);
         if (handSide == HandSide.any) DestroyMe();
         switch (collision.rigidbody.name)
