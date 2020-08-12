@@ -8,7 +8,7 @@ BoxerVR은 어쩌구저쩌구..
 ## 실행방법
 
 ### 준비
-1. Steam을 다운로드 후 설치하고, 계정으로 로그인합니다. [다운로드 페이지]https://store.steampowered.com/about/)
+1. Steam을 다운로드 후 설치하고, 계정으로 로그인합니다. [다운로드 페이지](https://store.steampowered.com/about/)
    - 이를 위해서 Steam 계정을 생성해야 합니다.
 2. Steam에서 SteamVR을 설치합니다. [바로 설치/실행 링크](steam://run/250820)
 3. 설치가 완료되면, Steam 창의 오른쪽 위의 VR 버튼을 클릭해 SteamVR을 실행합니다.
