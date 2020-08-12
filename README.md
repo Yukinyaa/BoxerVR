@@ -1,8 +1,7 @@
 # BoxerVR
 
 ## 개요
-BoxerVR은 어쩌구저쩌구..
-
+BoxerVR은....
 
 
 ## 실행방법
