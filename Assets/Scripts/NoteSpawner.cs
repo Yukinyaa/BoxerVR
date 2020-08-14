@@ -226,11 +226,22 @@ public class NoteSpawner : MonoBehaviour
                     var n = Instantiate(duckNote, Vector3.zero, Quaternion.identity).GetComponent<DuckNote>();
                     switch (special.ToLower())
                     {
-                        case "right":
+                        case "right45":
                             n.transform.Rotate(0, 0, 45);
                             break;
+                        case "left45":
+                            n.transform.Rotate(0, 0, -45);
+                            break;
+
+                        case "right":
+                            n.transform.Rotate(0, 0, 90);
+                            n.transform.localScale = new Vector3(1, 20, 20);
+                            n.GetComponentInChildren<BoxCollider>().enabled = false;
+                            break;
                         case "left":
-                            n.transform.Rotate(0, 0, 45);
+                            n.transform.Rotate(0, 0, -90);
+                            n.transform.localScale = new Vector3(1, 20, 20);
+                            n.GetComponentInChildren<BoxCollider>().enabled = false;
                             break;
                         default:
                             break;
@@ -245,7 +256,7 @@ public class NoteSpawner : MonoBehaviour
                     var y = ReadNum(line[2]);
                     
                     var n = Instantiate(note, Vector3.zero, Quaternion.identity).GetComponent<Note>();
-                    n.transform.localScale = Vector3.one * ReadNum(line[6]);
+                    n.transform.localScale = n.transform.localScale * ReadNum(line[6]);
                     HandSide handSide;
                     switch (line[3])
                     {
