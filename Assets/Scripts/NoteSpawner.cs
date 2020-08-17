@@ -216,7 +216,7 @@ public class NoteSpawner : MonoBehaviour
             try
             {
                 var line = csv[i];
-                if (line.Length < 3) break;
+                if (line.Length < 3 || line[0] == "") break;
                 if (line[1].StartsWith("duck") || line[1].StartsWith("squat"))
                 {
                     var timing = float.Parse(line[0]);
@@ -242,11 +242,17 @@ public class NoteSpawner : MonoBehaviour
                             n.transform.Rotate(0, 0, -90);
                             n.transform.localScale = new Vector3(1, 20, 20);
                             n.GetComponentInChildren<BoxCollider>().enabled = false;
+
+                            break;
+                        case "jump":
+                            n.GetComponentInChildren<BoxCollider>().enabled = false;
                             break;
                         default:
                             break;
                     }
                     n.Init(timing, len, musicPlayer, 140 / musicPlayer.BPM);
+                    if (special.ToLower() == "jump")
+                        n.pos = new Vector2(0, 0);
                 }
                 else
                 {
@@ -284,7 +290,10 @@ public class NoteSpawner : MonoBehaviour
                     n.reqStrength = float.Parse(line[5]);
                 }
             }
-            catch (System.FormatException) { throw new System.Exception(string.Format("Error parsing {0}:{1}", i, "x")); }
+            catch (System.FormatException e) {
+                Debug.LogError(e.StackTrace);
+                throw new System.Exception(string.Format("Error parsing {0}:{1}", i, "x"));
+            }
         }
     }
 

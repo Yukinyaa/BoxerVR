@@ -897,6 +897,11 @@ PrefabInstance:
       propertyPath: m_Name
       value: RightFootFinder
       objectReference: {fileID: 0}
+    - target: {fileID: 3413078814841047207, guid: 6b4ec2b763a97d34395cd74517770812,
+        type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 6b4ec2b763a97d34395cd74517770812, type: 3}
 --- !u!1 &1459391542
@@ -1844,8 +1849,6 @@ MonoBehaviour:
   note: {fileID: 9179336785172014050, guid: 1aa16b5fcd19b5645ad31d8f6156b672, type: 3}
   duckNote: {fileID: 5085353435713335975, guid: 754931d66fc61384e859996582ca843e,
     type: 3}
-  footNote: {fileID: 9179336785172014050, guid: 9b101ae55f4f36842be77373dd7b9f89,
-    type: 3}
   zero: {fileID: 867137229}
   two: {fileID: 1634557425}
   inputCsv: {fileID: 4900000, guid: 619f9b7e64b03c24482ce70867cb2b7e, type: 3}
@@ -2014,6 +2017,11 @@ PrefabInstance:
         type: 3}
       propertyPath: m_Name
       value: LeftFootFinder
+      objectReference: {fileID: 0}
+    - target: {fileID: 3413078814841047207, guid: 6b4ec2b763a97d34395cd74517770812,
+        type: 3}
+      propertyPath: m_IsActive
+      value: 0
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 6b4ec2b763a97d34395cd74517770812, type: 3}
