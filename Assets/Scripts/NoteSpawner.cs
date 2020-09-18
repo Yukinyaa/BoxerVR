@@ -88,7 +88,7 @@ public class NoteSpawner : MonoBehaviour
             try
             {
                 var line = csv[i];
-                if (line.Length < 3) break;
+                if (line.Length < 3 || line[0] == "") continue;
                 var timing = float.Parse(line[0]);
                 // timing = (int)timing + (timing % 1 / 4 * 10);// magic << 개트롤(이었던것)
                 var x = float.Parse(line[1]);
@@ -147,7 +147,7 @@ public class NoteSpawner : MonoBehaviour
             try
             {
                 var line = csv[i];
-                if (line.Length < 3) break;
+                if (line.Length < 3 || line[0] == "") continue;
                 if (line[1] == "duck")
                 {
                     var timing = float.Parse(line[0]);
@@ -216,7 +216,7 @@ public class NoteSpawner : MonoBehaviour
             try
             {
                 var line = csv[i];
-                if (line.Length < 3 || line[0] == "") break;
+                if (line.Length < 3 || line[0] == "") continue;
                 if (line[1].StartsWith("duck") || line[1].StartsWith("squat"))
                 {
                     var timing = float.Parse(line[0]);
