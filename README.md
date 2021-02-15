@@ -58,7 +58,7 @@ root
 ┃ ┣ Prefabs //각종 프리팹이 있는 폴더
 ┃ ┃ ┗ NotePF.prefab //노트의 프리팹
 ┃ ┗ Scripts
-┃  ┣ Note.cs //노트가 움직이는 Logic이 있는 클래스
+┃  ┣ Note.cs //노트가 움직이고, 파괴되는 Logic이 있는 클래스
 ┃  ┣ DuckNote.cs //스쿼트 노트 Logic 클래스
 ┃  ┣ MusicPlayer.cs //재생되는 음악의 정보를 가지고 있는 클래스
 ┃  ┖ NoteSpawner.cs //맵을 읽어들여 Note를 (한번에) 스폰하는 클래스
@@ -69,4 +69,6 @@ root
 `Notespawner`에서, `map.csv`를 읽어들여 `Note`스크립트가 포함된 `NotePF` 를 생성하게(인스턴스화/instantiate) 된다. 
 이 과정에서 Note를 모두 초기화하며 필요한 값을 모두 넘겨준다.
 
-이 과정에서, map 버전에 따라 다른 `parse*`함수가 호출되어
+이 과정에서, map 버전에 따라 다른 `ParseV*`함수가 호출되어, map의 버전에 맞게 해석하여, 노트를 모두 생성하게 됩니다.
+
+음악이 시작되면, `MusicPlayer`클래스를 통하여 음악의 재생 위치를 참고하여, 각 `(Duck)Note`오브젝트는 능동적으로 움직이게 됩니다.
