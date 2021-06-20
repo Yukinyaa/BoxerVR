@@ -1,0 +1,80 @@
+﻿BEGIN_OPTIONS
+	Stackable "False"
+	GrabPass { "_Grab" }
+	Alpha "Blend"
+	Tags { "Queue" = "Transparent-1" }
+END_OPTIONS
+
+BEGIN_PASS("All")
+	ZWrite On
+END_PASS
+
+BEGIN_SUBSHADERS
+	"TerrainOcean_Base.surfshader"
+END_SUBSHADERS
+
+BEGIN_PROPERTIES
+	[Header(TRANSPARENCY)]
+	[Toggle(_TRANSPARENCY_ON)] _HasTransparency("	Enabled", Float) = 0
+	_Refraction("	Refraction", Float) = 1.0
+	_OpacityRange("	Opacity Range", Float) = 1000.0
+	_OpacityPower("	Opacity Power", Float) = 2.0
+	_ShoreFadeRange("	Shore Fade Range", Float) = 20.0
+	_DeepRange("	Deep Range", Float) = 10000.0
+	_DeepPower("	Deep Power", Float) = 2.0
+	_DeepColor("	Deep Color", Color) = (0.0, 0.0, 1.0)
+END_PROPERTIES
+
+BEGIN_DEFINES
+	#pragma shader_feature_local _ _TRANSPARENCY_ON
+END_DEFINES
+
+BEGIN_CBUFFER
+	float _Refraction;
+	float _OpacityRange;
+	float _OpacityPower;
+
+	float _ShoreFadeRange;
+
+	float  _DeepRange;
+	float  _DeepPower;
+	float4 _DeepColor;
+END_CBUFFER
+
+BEGIN_CODE
+	float GetOutsideDistance(float3 ray, float3 rayD)
+	{
+		float B = dot(ray, rayD);
+		float C = dot(ray, ray) - 1.0f;
+		float D = B * B - C;
+		return max(-B - sqrt(max(D, 0.0f)), 0.0f);
+	}
+
+	void SurfaceFunction(inout Surface o, inout ShaderData d)
+	{
+	#if _TRANSPARENCY_ON
+		//float  depthDist     = GetLinearEyeDepth(d.screenUV) * length(d.extraV2F0.xyz / d.extraV2F0.z);
+		//float3 depthPos      = GetCameraWorldPosition() - d.worldSpaceViewDir * depthDist;
+
+		float3 depthPos = GetWorldPositionFromDepthBuffer(d.screenUV, d.worldSpaceViewDir);
+		float  depthDist = distance(depthPos, GetCameraWorldPosition());
+
+		float  opticalDepth  = depthDist - d.blackboard.worldDistance;
+
+		float2 bentScrUV = d.screenUV + o.Normal.xy * _Refraction * log(1.0f + depthDist) / _ScreenParams.xy;
+
+		// Deep
+		float deep = pow(1.0f - saturate(opticalDepth / _DeepRange), _DeepPower);
+		o.Albedo = lerp(_DeepColor, o.Albedo, deep);
+
+		// Opacity
+		float opacity = pow(1.0f - saturate(opticalDepth / _OpacityRange), _OpacityPower);
+		o.Emission += GetSceneColor(bentScrUV) * opacity;
+
+		// Shore
+		float shore = saturate(opticalDepth / _ShoreFadeRange);
+		o.Albedo *= shore * shore * (3.0 - 2.0f * shore);
+	#endif
+		o.Alpha = 1.0f;
+	}
+END_CODE

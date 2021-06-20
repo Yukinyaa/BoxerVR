@@ -1,0 +1,66 @@
+﻿BEGIN_SUBSHADERS
+	"Planet_Base.surfshader"
+END_SUBSHADERS
+
+BEGIN_PROPERTIES
+	[Header(DETAIL)]
+	[Toggle(_DETAIL_ON)] _HasDetail ("	Enabled", Float) = 0
+	_DetailTiling("	Tiling", Float) = 10
+	_DetailFadeRange("	Fade Range", Float) = 1000.0
+	_DetailScaleR("	Strength R", Range(0,5)) = 1
+	_DetailScaleG("	Strength G", Range(0,5)) = 1
+	_DetailScaleB("	Strength B", Range(0,5)) = 1
+	_DetailScaleA("	Strength A", Range(0,5)) = 1
+	[NoScaleOffset][Normal]_DetailMapR("	Normal R", 2D) = "bump" {}
+	[NoScaleOffset][Normal]_DetailMapG("	Normal G", 2D) = "bump" {}
+	[NoScaleOffset][Normal]_DetailMapB("	Normal B", 2D) = "bump" {}
+	[NoScaleOffset][Normal]_DetailMapA("	Normal A", 2D) = "bump" {}
+END_PROPERTIES
+
+BEGIN_DEFINES
+	#pragma shader_feature_local _ _DETAIL_ON
+END_DEFINES
+
+BEGIN_CBUFFER
+	float _DetailTiling;
+	float _DetailFadeRange;
+	float _DetailScaleR;
+	float _DetailScaleG;
+	float _DetailScaleB;
+	float _DetailScaleA;
+END_CBUFFER
+
+BEGIN_CODE
+	sampler2D _DetailMapR;
+	sampler2D _DetailMapG;
+	sampler2D _DetailMapB;
+	sampler2D _DetailMapA;
+
+	void SurfaceFunction(inout Surface o, inout ShaderData d)
+	{
+	#if _DETAIL_ON
+		float4 coords     = d.texcoord0;
+		float  max_height = _DetailTiling;
+
+		coords.x *= 2.0f;
+		coords *= _DetailTiling;
+
+		float polar = d.extraV2F0.x;
+		float noise = sample_noise(coords / 64.0f, polar) * 15.0f;
+		float fade  = saturate(d.blackboard.worldDistance / _DetailFadeRange);
+
+		#if _DETAIL_R
+		ContributeDetail(o, _DetailMapR, coords, polar, max_height, noise, d.blackboard.detailMask.r * _DetailScaleR * fade);
+		#endif
+		#if _DETAIL_G
+		ContributeDetail(o, _DetailMapG, coords, polar, max_height, noise, d.blackboard.detailMask.g * _DetailScaleG * fade);
+		#endif
+		#if _DETAIL_B
+		ContributeDetail(o, _DetailMapB, coords, polar, max_height, noise, d.blackboard.detailMask.b * _DetailScaleB * fade);
+		#endif
+		#if _DETAIL_A
+		ContributeDetail(o, _DetailMapA, coords, polar, max_height, noise, d.blackboard.detailMask.a * _DetailScaleA * fade);
+		#endif
+	#endif
+	}
+END_CODE

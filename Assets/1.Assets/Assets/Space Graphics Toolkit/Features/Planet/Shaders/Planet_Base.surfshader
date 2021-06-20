@@ -1,0 +1,125 @@
+﻿BEGIN_OPTIONS
+	Stackable "False"
+END_OPTIONS
+
+BEGIN_PROPERTIES
+	_Color("Color", Color) = (1,1,1,1)
+	_Metallic("Metallic", Range(0,1)) = 0
+	_GlossMapScale("Smoothness", Range(0,1)) = 1
+	_BumpScale("Normal Strength", Range(0,5)) = 1
+
+	[NoScaleOffset]_MainTex("Albedo (RGB) Smoothness (A)", 2D) = "white" {}
+	[NoScaleOffset][Normal]_BumpMap("Normal", 2D) = "bump" {}
+	[NoScaleOffset]_HeightMap("Height (A)", 2D) = "white" {}
+
+	[Header(SHARED)]
+
+	[Toggle(_DETAIL_R)] _HasDetailR ("	Detail R", Float) = 0
+	[Toggle(_DETAIL_G)] _HasDetailG ("	Detail G", Float) = 0
+	[Toggle(_DETAIL_B)] _HasDetailB ("	Detail B", Float) = 0
+	[Toggle(_DETAIL_A)] _HasDetailA ("	Detail A", Float) = 0
+	[NoScaleOffset]_DetailMaskMap("	Detail Mask (RGBA)", 2D) = "white" {}
+	[NoScaleOffset]_NoiseTex("	Noise Texture (A)", 2D) = "black" {}
+END_PROPERTIES
+
+BEGIN_DEFINES
+	#pragma shader_feature_local _ _DETAIL_R
+	#pragma shader_feature_local _ _DETAIL_G
+	#pragma shader_feature_local _ _DETAIL_B
+	#pragma shader_feature_local _ _DETAIL_A
+END_DEFINES
+
+BEGIN_CBUFFER
+	float4 _Color;
+	float  _Metallic;
+	float  _GlossMapScale;
+
+	float _BumpScale;
+
+	float _BakedDetailTilingA;
+	float _BakedDetailTilingAMul;
+	float _BakedDetailTilingB;
+	float _BakedDetailTilingC;
+END_CBUFFER
+
+BEGIN_BLACKBOARD
+	float4 detailMask;
+	float worldDistance;
+END_BLACKBOARD
+
+BEGIN_CODE
+	TEXTURE2D(_MainTex);
+	SAMPLER(sampler_MainTex);
+	TEXTURE2D(_BumpMap);
+	SAMPLER(sampler_BumpMap);
+	TEXTURE2D(_DetailMaskMap);
+	SAMPLER(sampler_DetailMaskMap);
+
+	sampler2D _NoiseTex;
+
+	float4 sample_grad(sampler2D s, float4 uv, bool pole, float4 gx, float4 gy)
+	{
+		float2 uv2 = pole ? uv.xy : uv.zw;
+		float2 gx2 = pole ? gx.xy : gx.zw;
+		float2 gy2 = pole ? gy.xy : gy.zw;
+
+		return tex2Dgrad(s, uv2, gx2, gy2);
+	}
+
+	float4 sample_spherical(sampler2D s, float4 uv, float cur_height, int max_height)
+	{
+		float div_height = max_height * 0.5f;
+		float this_index = floor(cur_height);
+		float next_index = this_index + 1.0f;
+
+		float4 uvA     = uv + sin(float4(1.0f, 2.0f, 1.0f, 2.0f) * this_index);
+		float4 uvB     = uv + sin(float4(1.0f, 2.0f, 1.0f, 2.0f) * next_index);
+		float4 gradX   = ddx(uv);
+		float4 gradY   = ddy(uv);
+		float4 sampleA = sample_grad(s, uvA, this_index < div_height, gradX, gradY);
+		float4 sampleB = sample_grad(s, uvB, next_index < div_height, gradX, gradY);
+
+		return lerp(sampleA, sampleB, cur_height - this_index);
+	}
+
+	float sample_noise(float4 coords, float polar)
+	{
+		float tex1 = tex2D(_NoiseTex, coords.xy).a;
+		float tex2 = tex2D(_NoiseTex, coords.zw).a;
+
+		return lerp(tex1, tex2, polar) - 0.5f;
+	}
+
+	half3 CombineNormals(half3 n1, half3 n2)
+	{
+		return normalize(half3(n1.xy + n2.xy, n1.z*n2.z));
+	}
+
+	void ContributeDetail(inout Surface o, sampler2D samp, float4 coords, float polar, float max_height, float noise, float weight)
+	{
+		float  cur_height = polar * max_height + noise;
+		float3 detail     = UnpackScaleNormal(sample_spherical(samp, coords, cur_height, max_height), weight);
+
+		o.Normal = CombineNormals(o.Normal, detail);
+	}
+
+	void ModifyVertex(inout VertexData v, inout ExtraV2F d)
+	{
+		d.extraV2F0.x = abs(v.texcoord0.y - 0.5f) * 2.0f; // Polar
+	}
+
+	void SurfaceFunction(inout Surface o, inout ShaderData d)
+	{
+		float4 texMain = SAMPLE_TEXTURE2D(_MainTex, sampler_MainTex, d.texcoord0.xy);
+
+		o.Albedo     = texMain.rgb * _Color.rgb;
+		o.Normal     = UnpackScaleNormal(SAMPLE_TEXTURE2D(_BumpMap, sampler_BumpMap, d.texcoord0.xy), _BumpScale);
+		o.Metallic   = _Metallic;
+		o.Smoothness = _GlossMapScale * texMain.a;
+		o.Occlusion  = 1.0f;
+		o.Alpha      = 0.0f;
+
+		d.blackboard.worldDistance = distance(GetCameraWorldPosition(), d.worldSpacePosition);
+		d.blackboard.detailMask    = SAMPLE_TEXTURE2D(_DetailMaskMap, sampler_DetailMaskMap, d.texcoord0);
+	}
+END_CODE

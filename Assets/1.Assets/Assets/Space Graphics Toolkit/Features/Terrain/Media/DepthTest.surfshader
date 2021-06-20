@@ -1,0 +1,70 @@
+﻿BEGIN_OPTIONS
+	Stackable "False"
+	GrabPass { "_Grab" }
+	Tags { "Queue" = "Transparent-1" }
+END_OPTIONS
+
+BEGIN_PROPERTIES
+	_Color ("Main Color", Color) = (0, 1, 0, 1)
+
+	_OpacityFadeRange("	Opacity Fade Range", Float) = 1000.0
+	_OpacityFadePower("	Opacity Fade Power", Float) = 2.0
+	_ShoreFadeRange("	Shore Fade Range", Float) = 20.0
+	_DeepRange("	Deep Range", Float) = 10000.0
+	_DeepPower("	Deep Power", Float) = 2.0
+	_DeepColor("	Deep Color", Color) = (0.0, 0.0, 1.0)
+END_PROPERTIES
+
+BEGIN_CBUFFER
+	half4 _Color;
+	float    _Radius;
+	float4x4 _WorldToLocal;
+
+	float _OpacityFadeRange;
+	float _OpacityFadePower;
+
+	float _ShoreFadeRange;
+
+	float _DeepRange;
+	float _DeepPower;
+	float4 _DeepColor;
+END_CBUFFER
+
+BEGIN_BLACKBOARD
+	float worldDistance;
+END_BLACKBOARD
+
+BEGIN_CODE
+
+	void ModifyVertex(inout VertexData v, inout ExtraV2F d)
+	{
+		d.extraV2F0.w = abs(v.texcoord0.y - 0.5f) * 2.0f; // Polar
+		d.extraV2F0.xyz = mul(UNITY_MATRIX_MV, v.vertex).xyz;
+	}
+
+	void SurfaceFunction(inout Surface o, ShaderData d)
+	{
+		o.Albedo = _Color.rgb;
+		o.Alpha = _Color.a;
+
+		d.blackboard.worldDistance = distance(GetCameraWorldPosition(), d.worldSpacePosition);
+
+		float  depthDist = GetLinearEyeDepth(d.screenUV) * length(d.extraV2F0.xyz / d.extraV2F0.z);
+		float  depthDiff = depthDist - d.blackboard.worldDistance;
+		float3 depthPos  = GetCameraWorldPosition() - d.worldSpaceViewDir * depthDist;
+		float  depth     = _Radius - length(mul(_WorldToLocal, float4(depthPos, 1.0f)).xyz);
+
+		float opacity = pow(1.0f - saturate(depthDiff / _OpacityFadeRange), _OpacityFadePower);
+		float shore   = saturate(depthDiff / _ShoreFadeRange);
+		float deep    = pow(1.0f - saturate(depth / _DeepRange), _DeepPower);
+
+		float2 bentScrUV = d.screenUV + o.Normal.xy * 0.05f * log(1.0f + shore);
+
+		o.Emission += GetSceneColor(bentScrUV) * opacity;
+
+		o.Albedo = lerp(_DeepColor, o.Albedo, deep);
+		o.Albedo *= shore;
+	}
+
+END_CODE
+
