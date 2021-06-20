@@ -15,7 +15,11 @@ public class MusicPlayer : MonoBehaviour
 
     public float readOnlyBeatTest;
 
-    public float CurrentBeat { get { return (float)BPM / 60 * (@as.time - offset/1000f); } }
+    public bool IsPlaying => @as.isPlaying;
+    public float CurrentBeat { get {
+            if (@as.isPlaying == false) return -9999;
+            return (float)BPM / 60 * (@as.time - offset/1000f); 
+        } }
     
     public int currntBPM = 120;
     public int offset = 188;

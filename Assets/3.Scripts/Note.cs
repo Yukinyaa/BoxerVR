@@ -79,8 +79,11 @@ public class Note : MonoBehaviour
         transform.position = new Vector3(pos.x, pos.y, -delta * speed);
     }
     const float sideAccuracy = 0.5f;
-   void OnCollisionEnter(Collision collision) {
-        if(LayerMask.NameToLayer("Hands")!=collision.gameObject.layer) return;
+    void OnCollisionEnter(Collision collision)
+    {
+        if (mp.IsPlaying == false) return;
+
+        if (LayerMask.NameToLayer("Hands")!=collision.gameObject.layer) return;
         
         var handVelocity = collision.gameObject.GetComponent<SpeedMeter>().velocity;
         var hvNorm = handVelocity.normalized;
@@ -116,7 +119,7 @@ public class Note : MonoBehaviour
             default: 
                 throw new ArgumentException();
         }
-   }
+    }
     void DestroyMe()
     {
         BeatManager.Instance.GetComponent<AudioSource>().PlayOneShot(TickSound, 5);

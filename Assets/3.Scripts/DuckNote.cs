@@ -16,13 +16,13 @@ public class DuckNote : MonoBehaviour, IColRouteObject
     public float duration;
     public AudioClip FailedSound;
     public AudioClip SuccessSound;
-    
+
 
     public List<List<GameObject>> OnDestoroyObjects;
     // Start is called before the first frame update
     void Start()
     {
-        
+
     }
 
     public void Init(float beat, float duration, MusicPlayer parent, float speed)
@@ -33,7 +33,10 @@ public class DuckNote : MonoBehaviour, IColRouteObject
         this.speed = speed;
         Color c = Color.gray;
         pos = new Vector2(0, 1.7f);
-        transform.localScale = new Vector3(3, 1, duration * speed);
+        var bc = GetComponentInChildren<BoxCollider>();
+        var scale = duration * speed / transform.localScale.z;
+        bc.center = new Vector3(0, 0, scale / 2);
+        bc.size = new Vector3(1, 1, scale);
 #if UNITY_2018
         gameObject.GetComponent<Renderer>().material.color = c;
 #elif UNITY_2019
@@ -69,9 +72,9 @@ public class DuckNote : MonoBehaviour, IColRouteObject
 
     public void OnRoutedCollisionEvent(Collision col)
     {
+        if (mp.IsPlaying == false) return;
         if (col.gameObject.name != "HeadCollider") return;
 
-        
-        //DestroyMe(false);
+        DestroyMe(false);
     }
 }

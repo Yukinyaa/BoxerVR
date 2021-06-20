@@ -1,0 +1,16 @@
+{
+  "source": "Unity",
+  "applications": [
+    {
+      "app_key": "application.generated.unity.boxervr.exe",
+      "launch_type": "url",
+      "url": "steam://launch/",
+      "action_manifest_path": "C:\\Users\\woong\\Documents\\_Git\\BoxerVR\\actions.json",
+      "strings": {
+        "en_us": {
+          "name": "BoxerVR [Testing]"
+        }
+      }
+    }
+  ]
+}
